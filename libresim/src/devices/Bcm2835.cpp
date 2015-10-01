@@ -5,6 +5,7 @@
 #include "Memory.hpp"
 #include "devices/MmioArea.hpp"
 #include "UartRelay.hpp"
+#include "MmioHost.hpp"
 
 #include <cassert>
 #include <ios>
@@ -210,7 +211,7 @@ static MmioDefinition registers = {
 };
 
 
-Bcm2835::Bcm2835() : data(NULL), mmio(NULL), sram(NULL), sramData(NULL), uartRelay(NULL) {
+Bcm2835::Bcm2835() : data(NULL), mmio(NULL), sram(NULL), sramData(NULL), uartRelay(NULL), mmioHost(NULL) {
 	for (unsigned int i = 0; i < 4; i++) {
 		memory[i] = NULL;
 	}
@@ -239,13 +240,23 @@ Bcm2835::~Bcm2835() {
 	if (sramData) {
 		delete[] sramData;
 	}
+#ifdef UART_RELAY
 	if (uartRelay) {
 		delete uartRelay;
 	}
+#else
+	if (mmioHost) {
+		delete mmioHost;
+	}
+#endif
 }
 
 void Bcm2835::initialize(Log *log, Memory *memory) {
+#ifdef UART_RELAY
 	uartRelay = new UartRelay("192.168.0.100");
+#else
+	mmioHost = new MmioHost (log);
+#endif
 
 	if (data == NULL) {
 		data = new uint8_t[MEMORY_SIZE];
@@ -264,9 +275,15 @@ void Bcm2835::initialize(Log *log, Memory *memory) {
 	log->info("bcm2835", "Added MMIO (0x%08x to 0x%08x).", MMIO_START,
 			MMIO_START + MMIO_LENGTH);
 
+#ifdef UART_RELAY
 	mmio->setCallbacks(&UartRelay::executeWriteStatic,
 	                   &UartRelay::executeReadStatic,
 	                   uartRelay);
+#else
+	mmio->setCallbacks(&MmioHost::executeWriteStatic,
+			   &MmioHost::executeReadStatic,
+			   mmioHost);
+#endif
 
 	/*bootrom = new MmioArea(bootromRegs, BOOTROM_START,
 			BOOTROM_START + BOOTROM_LENGTH, log);

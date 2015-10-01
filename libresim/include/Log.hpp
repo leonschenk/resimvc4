@@ -50,7 +50,9 @@ struct LogLine {
  */
 class Log {
 public:
-	Log(const std::string &filename);
+	Log();
+
+	void tofile(const std::string &filename);
 
 	void debug(const std::string &source, const char *fmt, ...)
 			__attribute__ ((format (printf, 3, 4)));
@@ -67,6 +69,8 @@ private:
 	         const std::string &source,
 	         const char *fmt,
 	         va_list args);
+
+	bool active;
 
 	std::mutex fileMutex;
 	std::ofstream file;

@@ -19,24 +19,51 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Simulation.hpp"
-#include "Memory.hpp"
-#include "Processor.hpp"
-#include "Device.hpp"
+#ifndef RESIM_MmioHost_HPP_INCLUDED
+#define RESIM_MmioHost_HPP_INCLUDED
 
-Simulation::Simulation(Processor *processor)
-		: log(), processor(processor) {
-	memory = new Memory();
-	processor->initialize(&log, memory);
-}
-Simulation::~Simulation() {
-	for (Device *device : devices) {
-		delete device;
+#include "Log.hpp"
+
+#include <string>
+#include <cstdint>
+
+class MmioHost {
+public:
+	MmioHost(Log *);
+	~MmioHost();
+
+	void executeWrite(uintptr_t address,
+	                  uint64_t value,
+	                  unsigned int size);
+	uint64_t executeRead(uintptr_t address,
+	                     unsigned int size);
+
+	static void executeWriteStatic(void *thisPtr,
+	                               uintptr_t address,
+	                               uint64_t value,
+                                   unsigned int size) {
+		((MmioHost*)thisPtr)->executeWrite(address, value, size);
 	}
-	delete processor;
-}
+	static uint64_t executeReadStatic(void *thisPtr,
+	                                  uintptr_t address,
+	                                  unsigned int size) {
+		return ((MmioHost*)thisPtr)->executeRead(address, size);
+	}
+private:
+	Log *log;
 
-void Simulation::addDevice(Device *device) {
-	device->initialize(&log, memory);
-	devices.push_back(device);
-}
+	struct {
+		uint32_t enables;
+		struct {
+			uint32_t baud_reg;
+		} mini_uart;
+	} aux;
+
+	struct {
+		uint32_t gpfsel[5];
+		uint32_t gppud;
+		uint32_t gppudclk0;
+	} gpio;
+};
+
+#endif

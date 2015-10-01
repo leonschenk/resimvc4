@@ -23,35 +23,48 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 
-Log::Log(const std::string &filename) : file(filename), time(0) {
+Log::Log() : active(false), file(), time(0) {
+}
+
+void Log::tofile(const std::string &filename) {
+	file.open(filename);
 	if (!file) {
 		throw std::runtime_error("Cannot open log file for writing.");
 	}
+	active = true;
 }
 
 void Log::debug(const std::string &source, const char *fmt, ...) {
 	va_list args;
-	va_start(args, fmt);
-	log(LogLevel::Debug, source, fmt, args);
-	va_end( args );
+	if (active) {
+		va_start(args, fmt);
+		log(LogLevel::Debug, source, fmt, args);
+		va_end( args );
+	}
 }
 void Log::info(const std::string &source, const char *fmt, ...) {
 	va_list args;
-	va_start(args, fmt);
-	log(LogLevel::Information, source, fmt, args);
-	va_end( args );
+	if (active) {
+		va_start(args, fmt);
+		log(LogLevel::Information, source, fmt, args);
+		va_end( args );
+	}
 }
 void Log::warning(const std::string &source, const char *fmt, ...) {
 	va_list args;
-	va_start(args, fmt);
-	log(LogLevel::Warning, source, fmt, args);
-	va_end( args );
+	if (active) {
+		va_start(args, fmt);
+		log(LogLevel::Warning, source, fmt, args);
+		va_end( args );
+	}
 }
 void Log::error(const std::string &source, const char *fmt, ...) {
 	va_list args;
-	va_start(args, fmt);
-	log(LogLevel::Error, source, fmt, args);
-	va_end( args );
+	if (active) {
+		va_start(args, fmt);
+		log(LogLevel::Error, source, fmt, args);
+		va_end( args );
+	}
 }
 
 void Log::incrementTime() {
@@ -62,14 +75,16 @@ void Log::log(LogLevel::List level,
               const std::string &source,
               const char *fmt,
               va_list args) {
-	char text[256];
-	vsnprintf(text, 256, fmt, args);
-	LogLine line;
-	line.time = time;
-	line.level = level;
-	line.source = source;
-	line.text = text;
-	fileMutex.lock();
-	file << line.time << "\t" << line.text << std::endl;
-	fileMutex.unlock();
+	if (active) {
+		char text[256];
+		vsnprintf(text, 256, fmt, args);
+		LogLine line;
+		line.time = time;
+		line.level = level;
+		line.source = source;
+		line.text = text;
+		fileMutex.lock();
+		file << line.time << "\t" << line.text << std::endl;
+		fileMutex.unlock();
+	}
 }

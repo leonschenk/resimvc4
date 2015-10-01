@@ -30,6 +30,8 @@ set(SRC
 	src/devices/RamDevice.cpp
 	src/devices/UartRelay.cpp
 	src/devices/UartRelay.hpp
+	src/devices/MmioHost.cpp
+	src/devices/MmioHost.hpp
 	src/videocore/VideoCoreIVDecode.hpp
 	src/videocore/VideoCoreIVExecute.hpp
 	src/videocore/VideoCoreIVProcessor.cpp

@@ -48,26 +48,48 @@ static bool createSimulator(Processor **processor, QList<Device*> *devices) {
 
 int main(int argc, char **argv) {
 	QCoreApplication app(argc, argv);
+	int i = 1, first_pos_arg = 1, remaining_args;
+	bool logging = false;
+	
+	if (argc <= 1)
+		goto usage;
+	
+	while (true)
+	  {
+	    if (strcmp (argv[i], "-log") == 0)
+	      logging = true;
+	    else
+	      break;
+	    
+	    i++;
+	  }
+
+	first_pos_arg = i;
+	remaining_args = argc - first_pos_arg;
+
 	// Parse the input parameters
-	if (argc != 4 && argc != 5) {
+	if (remaining_args != 3 && remaining_args != 4) {
+		usage:
 		std::cout << "Invalid number of parameters.\n"
 				"Usage: " << argv[0]
-				<< " <memory-image> <image-address> <start-address> [<bootrom>]"
+				<< " [-log] <memory-image> <image-address> <start-address> [<bootrom>]"
 				<< std::endl;
 		return -1;
 	}
-	QString imageFileName = argv[1];
+	QString imageFileName = argv[first_pos_arg];
 	QString bootromFileName = "";
-	if (argc == 5) {
-		bootromFileName = argv[4];
+	if (remaining_args == 4) {
+		bootromFileName = argv[first_pos_arg + 3];
 	}
 	bool ok;
-	uintptr_t imageAddress = QString(argv[2]).toULong(&ok, 0);
+	uintptr_t imageAddress
+	  = QString(argv[first_pos_arg + 1]).toULong(&ok, 0);
 	if (!ok) {
 		std::cerr << "Could not parse the image base address." << std::endl;
 		return -1;
 	}
-	uintptr_t entryAddress = QString(argv[3]).toULong(&ok, 0);
+	uintptr_t entryAddress
+	  = QString(argv[first_pos_arg + 2]).toULong(&ok, 0);
 	if (!ok) {
 		std::cerr << "Could not parse the program entry address." << std::endl;
 		return -1;
@@ -102,7 +124,9 @@ int main(int argc, char **argv) {
 	}*/
 	// Initialize the simulator
 	Memory memory;
-	Log log("vc4emul.log");
+	Log log;
+	if (logging)
+		log.tofile("vc4emul.log");
 	log.info("", "Initializing the simulator...");
 	processor->initialize(&log, &memory);
 	foreach (auto device, devices) {

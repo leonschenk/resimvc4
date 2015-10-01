@@ -9,6 +9,7 @@
 class RamArea;
 class MmioArea;
 class UartRelay;
+class MmioHost;
 
 class Bcm2835 : public Device {
 public:
@@ -33,6 +34,7 @@ private:
 	uint8_t *sramData;
 
 	UartRelay *uartRelay;
+	MmioHost *mmioHost;
 };
 
 #endif
