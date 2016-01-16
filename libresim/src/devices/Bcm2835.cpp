@@ -24,7 +24,8 @@
 class RegisterBcm2835 {
 public:
 	RegisterBcm2835() {
-		std::cout << "Registering BCM2835" << std::endl;
+		if (false)
+			std::cout << "Registering BCM2835" << std::endl;
 		static Bcm2835 device;
 		Device::registerDeviceType(&device);
 	}

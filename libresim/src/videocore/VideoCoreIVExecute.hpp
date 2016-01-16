@@ -531,6 +531,19 @@ private:
 			case OP_ADDS16:
 				registers.setRegister(rd, a + b * 16);
 				break;
+			case OP_EXTS:
+				{
+					unsigned hibit = 1 << b;
+					unsigned mask = (1 << b) - 1;
+					if (a & hibit) {
+						registers.setRegister(rd,
+						  a | ~mask);
+					} else {
+						registers.setRegister(rd,
+						  a & mask);
+					}
+				}
+				break;
 			case OP_NEG:
 				registers.setRegister(rd, -(int32_t)b);
 				break;
@@ -623,6 +636,8 @@ private:
 			case COND_TRUE:
 				result = true;
 				break;
+			default:
+				throw std::runtime_error("Unsupported condition");
 		}
 		if (cond & 0x1) {
 			return !result;

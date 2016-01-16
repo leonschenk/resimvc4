@@ -1,0 +1,4 @@
+#!/bin/bash
+HERE="$(cd "$(dirname "$0")" && pwd)"
+vc4-elf-objcopy -O binary "$1" "$1".bin
+exec "$HERE/vc4emul" "$1".bin 0 0

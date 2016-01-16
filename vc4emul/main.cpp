@@ -9,11 +9,13 @@
 #include <QFile>
 #include <cassert>
 
-static Device *getDevice(const char *name) {
+static Device *getDevice(const char *name, bool verbose) {
 	auto devices = Device::getDeviceTypes();
 	assert(devices.size() > 0);
 	for (unsigned int i = 0; i < devices.size(); i++) {
-		std::cout << "Device: " << devices[i]->getName() << std::endl;
+		if (verbose)
+			std::cout << "Device: " << devices[i]->getName()
+				  << std::endl;
 		if (std::string(devices[i]->getName()) == name) {
 			return devices[i]->clone();
 		}
@@ -21,7 +23,8 @@ static Device *getDevice(const char *name) {
 	return NULL;
 }
 
-static bool createSimulator(Processor **processor, QList<Device*> *devices) {
+static bool createSimulator(Processor **processor, QList<Device*> *devices,
+			    bool verbose) {
 	// Create the processor
 	auto processors = Processor::getProcessorTypes();
 	assert(processors.size() > 0);
@@ -37,7 +40,7 @@ static bool createSimulator(Processor **processor, QList<Device*> *devices) {
 		return false;
 	}
 	// Create the devices
-	Device *dram = getDevice("BCM2835");
+	Device *dram = getDevice("BCM2835", verbose);
 	if (dram == NULL) {
 		std::cerr << "DRAM device not available!" << std::endl;
 		return false;
@@ -50,6 +53,7 @@ int main(int argc, char **argv) {
 	QCoreApplication app(argc, argv);
 	int i = 1, first_pos_arg = 1, remaining_args;
 	bool logging = false;
+	bool verbose = false;
 	
 	if (argc <= 1)
 		goto usage;
@@ -58,6 +62,8 @@ int main(int argc, char **argv) {
 	  {
 	    if (strcmp (argv[i], "-log") == 0)
 	      logging = true;
+	    else if (strcmp (argv[i], "-verbose") == 0)
+	      verbose = true;
 	    else
 	      break;
 	    
@@ -113,7 +119,7 @@ int main(int argc, char **argv) {
 	// Create the simulator
 	Processor *processor;
 	QList<Device*> devices;
-	if (!createSimulator(&processor, &devices)) {
+	if (!createSimulator(&processor, &devices, verbose)) {
 		return -1;
 	}
 	/*// Create a log file

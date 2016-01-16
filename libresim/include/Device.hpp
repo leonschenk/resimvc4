@@ -32,7 +32,8 @@ public:
 	virtual ~Device() {
 	}
 
-	static void registerDeviceType(const Device *device);
+	static void registerDeviceType(const Device *device,
+				       bool verbose=false);
 	static const std::vector<const Device*> &getDeviceTypes();
 
 	virtual void initialize(Log *log, Memory *memory) = 0;

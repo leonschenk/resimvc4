@@ -6,6 +6,8 @@
 #include "videocore/VideoCoreIVRegisterFile.hpp"
 #include "VideoCoreIVExecute.hpp"
 
+#include <cstdlib>
+
 int32_t extendSigned(int32_t value, uint32_t msbMask) {
 	if ((value & msbMask) != 0) {
 		return value | ~(msbMask | (msbMask - 1));
@@ -62,6 +64,9 @@ public:
 			// TODO: HALT?
 		} else if (inst == 0x0001) {
 			// NOP
+		} else if (inst == 0x0002) {
+			// Sleep. Use this to exit the emulator.
+			exit(0);
 		} else if (inst == 0x0004) {
 			execute.unk0004();
 			// TODO
@@ -199,6 +204,8 @@ public:
 			unsigned int rd = inst1 & 0x1f;
 			execute.loadStoreOffset(store, format, rd, rb,
 					extendSigned(inst2, 0x8000));
+			if (!store && rd == VC_PC)
+				return;
 		} else if ((inst1 & 0xff00) == 0xa000 && (inst2 & 0x0060) == 0x0000) {
 			bool store = (inst1 & 0x20) != 0;
 			unsigned int format = (inst1 >> 6) & 0x3;
@@ -207,6 +214,18 @@ public:
 			unsigned int rb = inst2 & 0x1f;
 			unsigned int cond = (inst2 >> 7) & 0xf;
 			execute.loadStoreIndexed(store, format, rd, ra, rb, cond);
+			if (!store && rd == VC_PC)
+				return;
+		} else if ((inst1 & 0xff00) == 0xa000 && (inst2 & 0x0040) == 0x0040) {
+			bool store = (inst1 & 0x20) != 0;
+			unsigned int format = (inst1 >> 6) & 0x3;
+			unsigned int rd = inst1 & 0x1f;
+			unsigned int ra = (inst2 >> 11) & 0x1f;
+			unsigned int offset = inst2 & 0x3f;
+			unsigned int cond = (inst2 >> 7) & 0xf;
+			execute.loadStoreOffset(store, format, rd, ra, extendSigned (offset, 0x20), cond);
+			if (!store && rd == VC_PC)
+				return;
 		} else if ((inst1 & 0xfe00) == 0xa200) {
 			bool store = (inst1 & 0x20) != 0;
 			unsigned int rd = inst1 & 0x1f;
@@ -217,6 +236,8 @@ public:
 			unsigned int format = (inst1 >> 6) & 0x3;
 			// TODO: Offset scale?
 			execute.loadStoreOffset(store, format, rd, rs, offset);
+			if (!store && rd == VC_PC)
+				return;
 		} else if ((inst1 & 0xfe00) == 0xa400) {
 			bool store = (inst1 & 0x20) != 0;
 			unsigned int rd = inst1 & 0x1f;
@@ -227,6 +248,8 @@ public:
 			bool predecrement = !postincrement;
 			execute.loadStoreOffset(store, format, rd, rs, 0, cond,
 					postincrement, predecrement);
+			if (!store && rd == VC_PC)
+				return;
 		} else if ((inst1 & 0xfc00) == 0xb000) {
 			unsigned int op = (inst1 >> 5) & 0x1f;
 			unsigned int rd = inst1 & 0x1f;
@@ -351,6 +374,18 @@ public:
 			offset = extendSigned(offset, 0x4000000);
 			log->debug("vc4", "offset: %08x", offset);
 			execute.loadStoreOffset(store, format, rd, rs, offset);
+			if (!store && rd == VC_PC)
+				return;
+		} else if ((inst1 & 0xff00) == 0xe700 && (inst3 & 0xf800) == 0xf800) {
+			bool store = (inst1 & 0x20) != 0;
+			unsigned int format = (inst1 >> 6) & 0x3;
+			unsigned int rd = inst1 & 0x1f;
+			int offset = inst3 & 0x7ff;
+			offset = (offset << 16) | inst2;
+			offset = extendSigned(offset, 0x4000000);
+			execute.loadStoreOffset(store, format, rd, VC_PC, offset);
+			if (!store && rd == VC_PC)
+				return;
 		} else if ((inst1 & 0xfc00) == 0xec00) {
 			unsigned int rs = (inst1 >> 5) & 0x1f;
 			unsigned int rd = inst1 & 0x1f;
