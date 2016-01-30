@@ -359,6 +359,8 @@ public:
 			unsigned int imm = inst3;
 			imm = (imm << 16) | inst2;
 			execute.binaryOpImm(op, rd, imm);
+                        if (rd == VC_PC)
+                                return;
 		} else if ((inst1 & 0xffe0) == 0xe500) {
 			unsigned int rd = inst1 & 0x1f;
 			unsigned int imm = inst3;
@@ -392,6 +394,8 @@ public:
 			unsigned int imm = inst3;
 			imm = (imm << 16) | inst2;
 			execute.binaryOpImm(14, OP_ADD, rd, rs, imm);
+                        if (rd == VC_PC)
+                                return;
 		} else {
 			throw std::runtime_error("scalar48: Unsupported instruction.");
 			// TODO
