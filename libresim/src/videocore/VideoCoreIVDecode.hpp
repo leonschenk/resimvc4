@@ -136,7 +136,8 @@ public:
 			bool store = (inst & 0x0200) != 0;
 			unsigned int rd = inst & 0xf;
 			int32_t offset = (inst >> 4) & 0x1f;
-			offset = extendSigned(offset, 0x10);
+                        // FIXME: I think this is an unsigned offset?
+			// offset = extendSigned(offset, 0x10);
 			offset *= 4;
 			execute.loadStoreOffset(store, WIDTH_U32, rd, VC_SP, offset);
 		} else if ((inst & 0xf800) == 0x0800) {
