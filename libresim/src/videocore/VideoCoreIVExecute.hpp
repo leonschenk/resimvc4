@@ -651,10 +651,18 @@ private:
 	}
 
 	unsigned int compare(int32_t a, int32_t b) {
-		return cc((int64_t)a - (int64_t)b);
+		int status = cc((int64_t)a - (int64_t)b);
+                const unsigned int C = 2;
+                if ((uint32_t) a < (uint32_t) b)
+                  status |= C;
+                return status;
 	}
 	unsigned int compareAdd(int32_t a, int32_t b) {
-		return cc((int64_t)a + (int64_t)b);
+		int status = cc((int64_t)a + (int64_t)b);
+                const unsigned int C = 2;
+                if (((int64_t)a + (int64_t)b) & 0x100000000ull)
+                  status |= C;
+                return status;
 	}
 
 	unsigned int compareFloat(float a, float b) {
@@ -670,16 +678,13 @@ private:
 
 	unsigned int cc(int64_t result) {
 		log->debug("vc4exec", "cc: %016lx", result);
-		const unsigned int Z = 8, N = 4, C = 2, V = 1;
+		const unsigned int Z = 8, N = 4, V = 1;
 		unsigned int status = 0;
 		if (result == 0) {
 			status |= Z;
 		}
 		if (result & 0x80000000) {
 			status |= N;
-		}
-		if (result & 0x100000000ull) {
-			status |= C;
 		}
 		if (result != (int32_t)result) {
 			status |= V;
