@@ -533,7 +533,7 @@ private:
 				break;
 			case OP_EXTS:
 				{
-					unsigned hibit = 1 << b;
+					unsigned hibit = 1 << (b - 1);
 					unsigned mask = (1 << b) - 1;
 					if (a & hibit) {
 						registers.setRegister(rd,
