@@ -255,6 +255,8 @@ public:
 			unsigned int op = (inst1 >> 5) & 0x1f;
 			unsigned int rd = inst1 & 0x1f;
 			unsigned int imm = inst2;
+			if (imm & 0x8000)
+				imm |= ~0xffff;
 			execute.binaryOpImm(14, op, rd, rd, imm);
 		} else if ((inst1 & 0xfc00) == 0xb400) {
 			unsigned int rd = inst1 & 0x1f;
