@@ -384,13 +384,11 @@ public:
 		registers.setRegister(rd, result);
 	}
 
-	void div(unsigned int cond, int rd, int ra, int rb, bool aUnsigned, bool bUnsigned) {
+	void divi(unsigned int cond, int rd, int ra, uint32_t b, bool aUnsigned, bool bUnsigned) {
 		if (!checkCond(cond)) {
 			return;
 		}
-		log->debug("vc4exec", "div: r%d = r%d / r%d", rd, ra, rb);
 		uint32_t a = registers.getRegister(ra);
-		uint32_t b = registers.getRegister(rb);
 		if (b == 0) {
 			throw std::runtime_error("Division through 0!");
 		}
@@ -406,6 +404,11 @@ public:
 		}
 		registers.setRegister(rd, result);
 	}
+
+        void div(unsigned int cond, int rd, int ra, int rb, bool aUnsigned, bool bUnsigned) {
+		log->debug("vc4exec", "div: r%d = r%d / r%d", rd, ra, rb);
+                divi(cond, rd, ra, registers.getRegister(rb), aUnsigned, bUnsigned);
+        }
 
 	void unk0004() {
 		log->debug("vc4exec", "UNK0004");

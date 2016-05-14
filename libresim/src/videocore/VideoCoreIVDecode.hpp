@@ -299,15 +299,16 @@ public:
 			unsigned int cond = (inst2 >> 7) & 0xf;
 			unsigned int rd = inst1 & 0x1f;
 			unsigned int ra = (inst2 >> 11) & 0x1f;
-			unsigned int rb = inst2 & 0x1f;
 			bool aUnsigned = (inst1 & 0x40) != 0;
 			bool bUnsigned = (inst1 & 0x20) != 0;
 			bool immediate = (inst2 & 0x40) != 0;
 			if (immediate) {
-				// TODO
-				throw std::runtime_error("div with immediate unimplemented!");
+				execute.divi(cond, rd, ra,
+                                        extendSigned(inst2 & 0x3f, 0x20),
+                                        aUnsigned, bUnsigned);
 			} else {
-				execute.div(cond, rd, ra, rb, aUnsigned, bUnsigned);
+				execute.div(cond, rd, ra, inst2 & 0x1f,
+                                        aUnsigned, bUnsigned);
 			}
 			// TODO
 		} else if ((inst1 & 0xffe0) == 0xc5e0 && (inst2 & 0x60) == 0x0) {
