@@ -161,6 +161,7 @@ int main(int argc, char **argv) {
 		for (auto it = registers.begin(); it != registers.end(); it++) {
 			std::cerr << *it << ": " << std::hex << processor->getRegister(*it) << std::endl;
 		}
+		return 1;
 	}
 	return 0;
 }
