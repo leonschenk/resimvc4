@@ -493,6 +493,14 @@ private:
 			case OP_MVN:
 				registers.setRegister(rd, ~b);
 				break;
+                        case OP_ROR:
+                                b &= 31;
+                                if (b > 0)
+                                        registers.setRegister(rd,
+                                            (a >> b) | (a << (32 - b)));
+                                else
+                                        registers.setRegister(rd, a);
+                                break;
 			case OP_CMP:
 				registers.setRegister(VC_SR, compare(a, b) | (registers.getRegister(VC_SR) & ~0xf));
 				break;
@@ -595,7 +603,11 @@ private:
 				registers.setRegister(VC_SR, compareFloat(*(float*)&a, *(float*)&b)
 						| (registers.getRegister(VC_SR) & ~0xf));
 				break;
-			default:
+			case OP_FABS:
+                                result = fabsf(*(float*)&b);
+                                registers.setRegister(rd, *(uint32_t*)&result);
+                                break;
+                        default:
 				throw std::runtime_error("Unimplemented float operation.");
 		}
 	}
