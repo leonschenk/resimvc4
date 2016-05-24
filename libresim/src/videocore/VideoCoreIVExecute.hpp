@@ -113,6 +113,11 @@ static unsigned int loadStoreSize(LoadStoreWidth format) {
 	}
 }
 
+union floatbits {
+  float f;
+  uint32_t u;
+};
+
 class VideoCoreIVExecute {
 public:
 	VideoCoreIVExecute(Memory *memory,
@@ -309,43 +314,48 @@ public:
 		if (!checkCond(cond)) {
 			return;
 		}
-		uint32_t value = registers.getRegister(ra);
+                floatbits valfb;
+                valfb.u = registers.getRegister(ra);
 		switch (op) {
 			case OP_FLOOR:
-				value = floor(*(float*)&value);
+				valfb.f = floorf(valfb.f);
 				break;
 			case OP_FTRUNC:
-				value = (int32_t)*(float*)&value;
+				valfb.u = (int32_t) valfb.f;
 				break;
 			case OP_FLTS:
-				*(float*)&value = (int32_t)value;
+				valfb.f = (int32_t) valfb.u;
 				break;
 			case OP_FLTU:
-				*(float*)&value = value;
+				valfb.f = valfb.u;
 				break;
 		}
 		switch (op) {
 			case OP_FLOOR:
 			case OP_FTRUNC: {
 				if (shift > 0) {
-					value <<= shift;
+					valfb.u <<= shift;
 				} else {
-					value >>= -shift;
+					valfb.u >>= -shift;
 				}
 				break;
 			}
 			case OP_FLTS:
 			case OP_FLTU:
-				log->debug("vc4exec", "shift %f >> %d", *(float*)&value, shift);
-				int32_t exponent = (value >> 23) & 0xff;
-				assert(exponent - shift < 0x100 && exponent - shift >= 0);
+				log->debug("vc4exec", "shift %f >> %d",
+                                           valfb.f, shift);
+				int32_t exponent = (valfb.u >> 23) & 0xff;
+				assert(exponent - shift < 0x100
+                                       && exponent - shift >= 0);
 				exponent = exponent - shift;
-				value = (value & 0x807fffff) | (exponent << 23);
-				log->debug("vc4exec", "result %f", *(float*)&value);
+				valfb.u = (valfb.u & 0x807fffff)
+                                          | (exponent << 23);
+				log->debug("vc4exec", "result %f", valfb.f);
 				break;
 		}
-		log->debug("vc4exec", "floatConv, result %08x/%d/%f", value, value, *(float*)&value);
-		registers.setRegister(rd, value);
+		log->debug("vc4exec", "floatConv, result %08x/%d/%f", valfb.u,
+                           valfb.u, valfb.f);
+		registers.setRegister(rd, valfb.u);
 	}
 
 	void floatOp(unsigned int cond, FloatOp op, int rd, int ra, int rb) {
@@ -580,32 +590,45 @@ private:
 		}
 		log->debug("vc4exec", "Result: %08x", registers.getRegister(rd));
 	}
-	void doBinaryFloatOp(FloatOp op, unsigned int rd, uint32_t a, uint32_t b) {
-		float result;
+	void doBinaryFloatOp(FloatOp op, unsigned int rd, uint32_t ua,
+                             uint32_t ub) {
+                floatbits a, b;
+                a.u = ua;
+                b.u = ub;
+		floatbits result;
 		switch (op) {
 			case OP_FADD:
-				result = *(float*)&a + *(float*)&b;
-				registers.setRegister(rd, *(uint32_t*)&result);
+				result.f = a.f + b.f;
+				registers.setRegister(rd, result.u);
 				break;
 			case OP_FSUB:
-				result = *(float*)&a - *(float*)&b;
-				registers.setRegister(rd, *(uint32_t*)&result);
+				result.f = a.f - b.f;
+				registers.setRegister(rd, result.u);
 				break;
 			case OP_FDIV:
-				result = *(float*)&a / *(float*)&b;
-				registers.setRegister(rd, *(uint32_t*)&result);
+				result.f = a.f / b.f;
+				registers.setRegister(rd, result.u);
 				break;
 			case OP_FMUL:
-				result = *(float*)&a * *(float*)&b;
-				registers.setRegister(rd, *(uint32_t*)&result);
+				result.f = a.f * b.f;
+				registers.setRegister(rd, result.u);
 				break;
 			case OP_FCMP:
-				registers.setRegister(VC_SR, compareFloat(*(float*)&a, *(float*)&b)
-						| (registers.getRegister(VC_SR) & ~0xf));
+				registers.setRegister(VC_SR,
+                                    compareFloat(a.f, b.f)
+				    | (registers.getRegister(VC_SR) & ~0xf));
 				break;
 			case OP_FABS:
-                                result = fabsf(*(float*)&b);
-                                registers.setRegister(rd, *(uint32_t*)&result);
+                                result.f = fabsf(b.f);
+                                registers.setRegister(rd, result.u);
+                                break;
+                        case OP_FMAX:
+                                result.f = fmaxf(a.f, b.f);
+                                registers.setRegister(rd, result.u);
+                                break;
+                        case OP_FMIN:
+                                result.f = fminf(a.f, b.f);
+                                registers.setRegister(rd, result.u);
                                 break;
                         default:
 				throw std::runtime_error("Unimplemented float operation.");
