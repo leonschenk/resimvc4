@@ -7,7 +7,7 @@ global target_list
 
 case "$target_triplet" in {
   { "vc4-*" } {
-    set target_list "vc4-sim"
+    set target_list "vc4-sim vc4-teststub"
   }
 }
 
