@@ -66,7 +66,7 @@ public:
 			// NOP
 		} else if (inst == 0x0002) {
 			// Sleep. Use this to exit the emulator.
-			exit(0);
+			exit(registers.getRegister(0));
 		} else if (inst == 0x0004) {
 			execute.unk0004();
 			// TODO
@@ -180,15 +180,31 @@ public:
 			log->debug("vc4", "offset: %08x", offset);
 			execute.blImm(offset * 2, 4);
 			return;
-		} else if ((inst1 & 0xfc00) == 0xc000 && (inst2 & 0x0060) == 0x0000) {
-			unsigned int op = (inst1 >> 5) & 0x1f;
+		} else if ((inst1 & 0xff80) == 0xc480 && (inst2 & 0x20) == 0) {
+			unsigned int cond = (inst2 >> 7) & 0xf;
+			unsigned int rd = inst1 & 0x1f;
+			unsigned int ra = (inst2 >> 11) & 0x1f;
+			bool aUnsigned = (inst1 & 0x40) != 0;
+			bool bUnsigned = (inst1 & 0x20) != 0;
+			bool immediate = (inst2 & 0x40) != 0;
+			if (immediate) {
+				execute.divi(cond, rd, ra,
+                                        extendSigned(inst2 & 0x3f, 0x20),
+                                        aUnsigned, bUnsigned);
+			} else {
+				execute.div(cond, rd, ra, inst2 & 0x1f,
+                                        aUnsigned, bUnsigned);
+			}
+			// TODO
+		} else if ((inst1 & 0xf800) == 0xc000 && (inst2 & 0x0060) == 0x0000) {
+			unsigned int op = (inst1 >> 5) & 0x3f;
 			unsigned int rd = inst1 & 0x1f;
 			unsigned int ra = (inst2 >> 11) & 0x1f;
 			unsigned int rb = inst2 & 0x1f;
 			unsigned int cond = (inst2 >> 7) & 0xf;
 			execute.binaryOp(cond, op, rd, ra, rb);
-		} else if ((inst1 & 0xfc00) == 0xc000 && (inst2 & 0x0040) == 0x0040) {
-			unsigned int op = (inst1 >> 5) & 0x1f;
+		} else if ((inst1 & 0xf800) == 0xc000 && (inst2 & 0x0040) == 0x0040) {
+			unsigned int op = (inst1 >> 5) & 0x3f;
 			unsigned int rd = inst1 & 0x1f;
 			unsigned int ra = (inst2 >> 11) & 0x1f;
 			int32_t imm = inst2 & 0x3f;
@@ -295,22 +311,6 @@ public:
 					return;
 				}
 			}
-		} else if ((inst1 & 0xff80) == 0xc480 && (inst2 & 0x20) == 0) {
-			unsigned int cond = (inst2 >> 7) & 0xf;
-			unsigned int rd = inst1 & 0x1f;
-			unsigned int ra = (inst2 >> 11) & 0x1f;
-			bool aUnsigned = (inst1 & 0x40) != 0;
-			bool bUnsigned = (inst1 & 0x20) != 0;
-			bool immediate = (inst2 & 0x40) != 0;
-			if (immediate) {
-				execute.divi(cond, rd, ra,
-                                        extendSigned(inst2 & 0x3f, 0x20),
-                                        aUnsigned, bUnsigned);
-			} else {
-				execute.div(cond, rd, ra, inst2 & 0x1f,
-                                        aUnsigned, bUnsigned);
-			}
-			// TODO
 		} else if ((inst1 & 0xffe0) == 0xc5e0 && (inst2 & 0x60) == 0x0) {
 			unsigned int cond = (inst2 >> 7) & 0xf;
 			unsigned int rd = inst1 & 0x1f;

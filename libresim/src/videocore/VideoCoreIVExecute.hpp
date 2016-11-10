@@ -44,7 +44,32 @@ enum BinaryOp {
 	OP_LSL,
 	OP_BREV,
 	OP_ASR,
-	OP_ABS
+	OP_ABS,
+	OP_MULHD_SS,
+	OP_MULHD_SU,
+	OP_MULHD_US,
+	OP_MULHD_UU,
+	OP_DIV_SS,
+	OP_DIV_SU,
+	OP_DIV_US,
+	OP_DIV_UU,
+	OP_ADDS,
+	OP_SUBS,
+	OP_SHLS,
+	OP_CLIPSH,
+	OP_ADDSCALE_5,
+	OP_ADDSCALE_6,
+	OP_ADDSCALE_7,
+	OP_ADDSCALE_8,
+	OP_COUNT,
+	OP_SUBSCALE_1,
+	OP_SUBSCALE_2,
+	OP_SUBSCALE_3,
+	OP_SUBSCALE_4,
+	OP_SUBSCALE_5,
+	OP_SUBSCALE_6,
+	OP_SUBSCALE_7,
+	OP_SUBSCALE_8
 };
 
 enum LoadStoreWidth {
@@ -471,7 +496,7 @@ private:
 		}
 	}
 	void doBinaryOp(unsigned int op, unsigned int rd, uint32_t a, uint32_t b) {
-		if (op >= 0x20) {
+		if (op >= 0x40) {
 			throw std::runtime_error("Invalid operation.");
 		}
 		log->debug("vc4exec", "Op: %d %08x %08x => r%d", op, a, b, rd);
@@ -584,6 +609,42 @@ private:
 				} else {
 					registers.setRegister(rd, (a >> b) || (0xffffffff << (32 - b)));
 				}
+				break;
+			case OP_ADDSCALE_5:
+				registers.setRegister(rd, a + (b << 5));
+				break;
+			case OP_ADDSCALE_6:
+				registers.setRegister(rd, a + (b << 6));
+				break;
+			case OP_ADDSCALE_7:
+				registers.setRegister(rd, a + (b << 7));
+				break;
+			case OP_ADDSCALE_8:
+				registers.setRegister(rd, a + (b << 8));
+				break;
+			case OP_SUBSCALE_1:
+				registers.setRegister(rd, a - (b << 1));
+				break;
+			case OP_SUBSCALE_2:
+				registers.setRegister(rd, a - (b << 2));
+				break;
+			case OP_SUBSCALE_3:
+				registers.setRegister(rd, a - (b << 3));
+				break;
+			case OP_SUBSCALE_4:
+				registers.setRegister(rd, a - (b << 4));
+				break;
+			case OP_SUBSCALE_5:
+				registers.setRegister(rd, a - (b << 5));
+				break;
+			case OP_SUBSCALE_6:
+				registers.setRegister(rd, a - (b << 6));
+				break;
+			case OP_SUBSCALE_7:
+				registers.setRegister(rd, a - (b << 7));
+				break;
+			case OP_SUBSCALE_8:
+				registers.setRegister(rd, a - (b << 8));
 				break;
 			default:
 				throw std::runtime_error("Unimplemented operation.");
