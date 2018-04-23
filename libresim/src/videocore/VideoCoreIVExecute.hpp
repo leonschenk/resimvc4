@@ -457,14 +457,13 @@ public:
 
 private:
 	void doLoadStore(bool store, int format, unsigned int rd, uint32_t address) {
-		if (store) {
+		if (store && (format != WIDTH_S16)) {
 			uint32_t value = registers.getRegister(rd);
 			log->debug("vc4exec", "STORE(%d) %08x <= %08x", format, address, value);
 			switch (format) {
 				case WIDTH_U32:
 					memory->writeWord(address, value);
 					break;
-				case WIDTH_S16:
 				case WIDTH_U16:
 					memory->writeHalfWord(address, value);
 					break;
@@ -487,7 +486,11 @@ private:
 					value = memory->readByte(address);
 					break;
 				case WIDTH_S16:
-					value = (int32_t)(int16_t)memory->readHalfWord(address);
+					if(store) {
+						value = (int32_t)(int8_t)memory->readByte(address);
+					} else {
+						value = (int32_t)(int16_t)memory->readHalfWord(address);
+					}
 					break;
 				default:
 					throw std::runtime_error("Invalid load/store format.");
