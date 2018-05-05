@@ -13,7 +13,7 @@ int32_t extendSigned(int32_t value, uint32_t msbMask) {
 		return value | ~(msbMask | (msbMask - 1));
 	} else {
 		return value;
-	}
+	}0
 }
 
 class VideoCoreIVDecode {

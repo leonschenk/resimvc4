@@ -44,6 +44,8 @@ public:
 	}
 private:
 	VideoCoreIVRegisterFile registers;
+	bool steppingMode;
+
 };
 
 #endif
