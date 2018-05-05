@@ -616,7 +616,7 @@ private:
 				if ((a & 0x80000000) == 0) {
 					registers.setRegister(rd, a);
 				} else {
-					registers.setRegister(rd, (-1*((int32_t)a)))
+					registers.setRegister(rd, (-1*((int32_t)a)));
 				}
 				break;
 			case OP_ADDSCALE_5:

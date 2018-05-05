@@ -8,7 +8,7 @@ public:
 	BreakpointException() : std::runtime_error("breakpoint") {
 	}
 
-	virtual char const * what() const {
+	virtual char const * what() const throw() {
 		return "A breakpoint was hit.";
 	}
 };
