@@ -8,6 +8,7 @@
 #include <QCoreApplication>
 #include <QFile>
 #include <cassert>
+#include <signal.h>
 
 static Device *getDevice(const char *name, bool verbose) {
 	auto devices = Device::getDeviceTypes();
@@ -49,11 +50,20 @@ static bool createSimulator(Processor **processor, QList<Device*> *devices,
 	return true;
 }
 
+void sighandler(int sig)
+{
+	throw BreakPointException();
+}
+
 int main(int argc, char **argv) {
 	QCoreApplication app(argc, argv);
 	int i = 1, first_pos_arg = 1, remaining_args;
 	bool logging = false;
 	bool verbose = false;
+
+	signal(SIGABRT, &sigHandler);
+	signal(SIGTERM, &sigHandler);
+	signal(SIGINT, &sigHandler);
 
 	if (argc <= 1)
 		goto usage;
