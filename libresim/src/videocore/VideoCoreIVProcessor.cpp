@@ -2,8 +2,10 @@
 #include "videocore/VideoCoreIVProcessor.hpp"
 #include "VideoCoreIVDecode.hpp"
 #include "VideoCoreIVExecute.hpp"
+#include "BreakpointException.hpp"
 
 #include <cassert>
+#include <iostream>
 
 class RegisterVideoCoreIVProcessor {
 public:
@@ -38,7 +40,24 @@ const std::vector<std::string> &VideoCoreIVProcessor::getRegisterList() {
 }
 void VideoCoreIVProcessor::run(unsigned int steps) {
 	VideoCoreIVDecode decode(getMemory(), registers, getLog());
+	bool steppingMode = false;
 	for (unsigned int i = 0; i < steps; i++) {
+		try {
+			if(steppingMode) {
+				throw BreakpointException();
+			}
+			for(std::vector<uint64_t>::const_iterator it = breakpoints.begin(); it != breakpoints.end(); it++) {
+				if(decode.pc() == *it) {
+					throw BreakpointException();
+				}
+			}
+		} catch(const BreakpointException& ex) {
+			std::string a("");
+			while(a.compare(0, 1, "c") != 0) {
+				std::cout << "Breakpoint, what to do?:";
+				std::cin >> a;
+			}
+		}
 		decode.step();
 	}
 }

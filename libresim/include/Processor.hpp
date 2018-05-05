@@ -44,6 +44,8 @@ public:
 		this->memory = memory;
 	}
 
+	virtual void setBreakpoint(const uint64_t address);
+
 	virtual void setRegister(const std::string &name, uint64_t value) = 0;
 	virtual uint64_t getRegister(const std::string &name) = 0;
 	virtual int getRegisterSize(const std::string &name) = 0;
@@ -60,9 +62,10 @@ public:
 	Memory *getMemory() {
 		return memory;
 	}
-private:
+protected:
 	Log *log;
 	Memory *memory;
+	std::vector<uint64_t> breakpoints;
 };
 
 #endif

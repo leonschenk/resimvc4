@@ -30,6 +30,7 @@ public:
 	VideoCoreIVProcessor();
 	VideoCoreIVProcessor(const VideoCoreIVProcessor &other);
 
+	virtual void setBreakpoint(const uint64_t address);
 	virtual void setRegister(const std::string &name,
 	                         uint64_t value);
 	virtual uint64_t getRegister(const std::string &name);

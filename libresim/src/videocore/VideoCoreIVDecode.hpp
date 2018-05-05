@@ -418,15 +418,15 @@ public:
 		throw std::runtime_error("vector80: Unsupported instruction.");
 		registers.setRegister(VC_PC, pc() + 10);
 	}
-private:
+
 	uint32_t pc() {
 		return registers.getRegister(VC_PC);
 	}
 
+private:
 	Memory *memory;
 	VideoCoreIVRegisterFile &registers;
 	Log *log;
-
 	VideoCoreIVExecute execute;
 };
 

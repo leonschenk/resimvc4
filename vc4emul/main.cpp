@@ -54,10 +54,10 @@ int main(int argc, char **argv) {
 	int i = 1, first_pos_arg = 1, remaining_args;
 	bool logging = false;
 	bool verbose = false;
-	
+
 	if (argc <= 1)
 		goto usage;
-	
+
 	while (true)
 	  {
 	    if (strcmp (argv[i], "-log") == 0)
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	      verbose = true;
 	    else
 	      break;
-	    
+
 	    i++;
 	  }
 
@@ -139,6 +139,7 @@ int main(int argc, char **argv) {
 		device->initialize(&log, &memory);
 	}
 	processor->setRegister("pc", entryAddress);
+	processor->setBreakpoint(entryAddress);
 	log.info("", "Loading the memory image...");
 	for (int offset = 0; offset < image.length(); offset++) {
 		memory.writeByte(imageAddress + offset, image.at(offset));

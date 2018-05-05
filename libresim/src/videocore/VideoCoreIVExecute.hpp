@@ -531,14 +531,13 @@ private:
 			case OP_MVN:
 				registers.setRegister(rd, ~b);
 				break;
-                        case OP_ROR:
-                                b &= 31;
-                                if (b > 0)
-                                        registers.setRegister(rd,
-                                            (a >> b) | (a << (32 - b)));
-                                else
-                                        registers.setRegister(rd, a);
-                                break;
+			case OP_ROR:
+				b &= 31;
+				if (b > 0)
+					registers.setRegister(rd, (a >> b) | (a << (32 - b)));
+				else
+					registers.setRegister(rd, a);
+				break;
 			case OP_CMP:
 				registers.setRegister(VC_SR, compare(a, b) | (registers.getRegister(VC_SR) & ~0xf));
 				break;
@@ -611,6 +610,13 @@ private:
 					registers.setRegister(rd, a >> b);
 				} else {
 					registers.setRegister(rd, (a >> b) || (0xffffffff << (32 - b)));
+				}
+				break;
+			case OP_ABS:
+				if ((a & 0x80000000) == 0) {
+					registers.setRegister(rd, a);
+				} else {
+					registers.setRegister(rd, (-1*((int32_t)a)))
 				}
 				break;
 			case OP_ADDSCALE_5:
