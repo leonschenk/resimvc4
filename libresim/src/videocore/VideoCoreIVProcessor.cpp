@@ -6,6 +6,9 @@
 
 #include <cassert>
 #include <iostream>
+#include <string>
+
+using namespace std;
 
 class RegisterVideoCoreIVProcessor {
 public:
@@ -59,27 +62,27 @@ void VideoCoreIVProcessor::run(unsigned int steps) {
 				std::cout << "Breakpoint hit at " << decode.pc() << ", what to do?:" << std::endl;
 				std::cout << "'(s)tep', '(r)egisters', '(c)ontinue', '(m)emory 1/2/4', '(b)reakpoint'";
 				std::cin >> a;
-				if(a.compare(0, 1, "s")) {
+				if(a.compare(0, 1, "s") == 0) {
 					steppingMode = true;
 					break;
-				} else if(a.compare(0, 1, "r")) {
+				} else if(a.compare(0, 1, "r")  == 0) {
 					const std::vector<std::string> &registers = this->getRegisterList();
 					for (std::vector<std::string>::const_iterator it = registers.begin(); it != registers.end(); it++) {
 						std::cerr << *it << ": " << std::hex << this->getRegister(*it) << std::endl;
 					}
-				} else if(a.compare(0, 1, "c")) {
+				} else if(a.compare(0, 1, "c") == 0) {
 					steppingMode = false;
-				} else if(a.compare(0, 1, "m")) {
+				} else if(a.compare(0, 1, "m") == 0) {
 					uint32_t address;
 					std::cin >> address;
-					if(a.compare(1, 1, "1")) {
+					if(a.compare(1, 1, "1") == 0) {
 						std::cout << "Value: " << std::hex << this->memory->readByte(address) << std::endl;
-					} else if(a.compare(1, 1, "2")) {
+					} else if(a.compare(1, 1, "2") == 0) {
 						std::cout << "Value: " << std::hex << this->memory->readHalfWord(address) << std::endl;
-					} else if(a.compare(1, 1, "4")) {
+					} else if(a.compare(1, 1, "4") == 0) {
 						std::cout << "Value: " << std::hex << this->memory->readWord(address) << std::endl;
 					}
-				} else if(a.compare(0, 1, "b")) {
+				} else if(a.compare(0, 1, "b") == 0) {
 					uint32_t address;
 					std::cin >> address;
 					bool found = false;
